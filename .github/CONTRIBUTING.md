@@ -12,8 +12,8 @@ git clone https://github.com/fay-i/behavior-kit.git
 cd behavior-kit
 ```
 
-The scaffold lives in `scaffold/`, the installer is `install.sh`, and the test suite is
-in `tests/`.
+The scaffold lives in `scaffold/`, the headless overlay in `scaffold-headless/`, the
+installer is `install.sh`, and the test suite is in `tests/`.
 
 ## Running the tests
 

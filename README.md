@@ -28,6 +28,38 @@ The `--local` flag adds behavior-kit paths to `.git/info/exclude` so the files s
 curl -fsSL https://raw.githubusercontent.com/fay-i/behavior-kit/main/install.sh | bash -s -- --update
 ```
 
+### Two install modes
+
+| | per-repo (default) | headless (`--headless [root]`) |
+| --- | --- | --- |
+| Target | a git repo | a workspace root that need **not** be a git repo (e.g. `~/dev`) |
+| Projects | one per install | many, via the constitution's `Project:` registry |
+| Specs | `specs/NNN-slug/` in the repo | plain dirs at `<specs>/<TICKET>/`, outside every repo |
+| Worktrees | `.worktrees/NNN-slug/` in the repo | `<worktrees>/<TICKET>-<group>/`, outside every repo |
+| Feature identity | sequential number | issue-tracker ticket key |
+| Extra phases | — | `/bk.epic`, `/bk.quarterback` |
+
+Headless exists for the workspace shape where several repos are checked out side by
+side and the orchestration layer sits above all of them. The kit never requires the
+root itself to be a repo — it resolves each project's paths from the registry and only
+ever runs git as `git -C <project repo>`. Its ticket-seeded phases assume an issue
+tracker reachable over MCP (Jira via the Atlassian MCP).
+
+```bash
+curl -fsSL <install.sh> | bash -s -- --headless ~/dev
+```
+
+Then register your projects in `.behavior-kit/memory/constitution.md`, one line each:
+
+```
+Project: <name> | repo=~/dev/<repo> | specs=~/dev/specs/<name> | worktrees=~/dev/worktrees/<name>
+```
+
+Registry paths may start with `~` (the scripts expand it) but **not** `$HOME`, which is
+taken literally and will fail to resolve. A headless install never overwrites an
+existing constitution, and keeps a `.bak-<n>` copy of any other file it changes — it is
+meant to land safely in a workspace that is already in use.
+
 `--update` refreshes every command/rule/skill/template/script file but **preserves `.behavior-kit/memory/constitution.md`** if it already exists, so your project's principles aren't overwritten. `specs/` and `sessions` branches are never touched.
 
 **Shell helper** (optional) — add to your `.zshrc` or `.bashrc`:
