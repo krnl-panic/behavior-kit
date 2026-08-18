@@ -37,7 +37,11 @@ curl -fsSL https://raw.githubusercontent.com/fay-i/behavior-kit/main/install.sh 
 | Specs | `specs/NNN-slug/` in the repo | plain dirs at `<specs>/<TICKET>/`, outside every repo |
 | Worktrees | `.worktrees/NNN-slug/` in the repo | `<worktrees>/<TICKET>-<group>/`, outside every repo |
 | Feature identity | sequential number | issue-tracker ticket key |
-| Extra phases | — | `/bk.epic`, `/bk.quarterback` |
+| Extra phases | `/bk.iterate` | `/bk.epic` |
+
+`/bk.quarterback` serves both: it lives in `scaffold/` as a single mode-aware copy and
+detects which shape it is in from the constitution, so its doctrine can't drift between
+the two trees.
 
 Headless exists for the workspace shape where several repos are checked out side by
 side and the orchestration layer sits above all of them. The kit never requires the

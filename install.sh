@@ -24,6 +24,8 @@ BASE_URL="${BEHAVIOR_KIT_BASE_URL:-https://raw.githubusercontent.com/${REPO}/${B
 # The headless overlay is a sibling of the per-repo scaffold, so derive it from
 # whatever BASE_URL points at (works for https and for the file:// URLs tests use).
 HEADLESS_URL="${BEHAVIOR_KIT_HEADLESS_URL:-${BASE_URL%/scaffold}/scaffold-headless}"
+# Files shared by both modes live in scaffold/ only, so keep its URL around.
+SCAFFOLD_URL="$BASE_URL"
 
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -207,7 +209,6 @@ HEADLESS_FILES=(
   ".claude/commands/bk.session.md"
   ".claude/commands/bk.monitor.md"
   ".claude/commands/bk.epic.md"
-  ".claude/commands/bk.quarterback.md"
   ".claude/agents/bk-specify.md"
   ".claude/agents/bk-plan.md"
   ".claude/agents/bk-behaviors.md"
@@ -229,6 +230,12 @@ HEADLESS_FILES=(
   ".behavior-kit/scripts/init-session.sh"
   ".behavior-kit/scripts/setup-worktrees.sh"
   "ROSTER-BOOTSTRAP-PROMPT.md"
+)
+
+# One mode-aware copy, kept in scaffold/ and installed by both modes, so its
+# doctrine can never drift between them.
+SHARED_FILES=(
+  ".claude/commands/bk.quarterback.md"
 )
 
 HEADLESS_SCRIPTS=(
@@ -258,34 +265,47 @@ is_preserved() {
   return 1
 }
 
-# Download each file. A headless install lands in a live workspace that may
-# already be in use, so it never destroys a differing file: the previous version
-# is kept alongside as <name>.bak-<n>. The constitution carries the Project
-# registry, so headless always preserves an existing one.
-for file in "${FILES[@]}"; do
+# Install one file from a given base URL. A headless install lands in a live
+# workspace that may already be in use, so it never destroys a differing file:
+# the previous version is kept alongside as <name>.bak-<n>. The constitution
+# carries the Project registry, so headless always preserves an existing one.
+install_file() {
+  local base="$1" file="$2"
   if { $UPDATE || $HEADLESS; } && is_preserved "$file" && [[ -f "$file" ]]; then
     dim "$file (preserved)"
-    continue
+    return 0
   fi
   mkdir -p "$(dirname "$file")"
   if $HEADLESS && [[ -f "$file" ]]; then
+    local tmp n
     tmp="$(mktemp)"
-    curl -fsSL "${BASE_URL}/${file}" -o "$tmp"
+    curl -fsSL "${base}/${file}" -o "$tmp"
     if cmp -s "$tmp" "$file"; then
       rm -f "$tmp"
       dim "$file (unchanged)"
-      continue
+      return 0
     fi
     n=1
     while [[ -e "$file.bak-$n" ]]; do n=$((n + 1)); done
     cp "$file" "$file.bak-$n"
     mv "$tmp" "$file"
     dim "$file (previous kept as $(basename "$file").bak-$n)"
-    continue
+    return 0
   fi
-  curl -fsSL "${BASE_URL}/${file}" -o "$file"
+  curl -fsSL "${base}/${file}" -o "$file"
   dim "$file"
+}
+
+for file in "${FILES[@]}"; do
+  install_file "$BASE_URL" "$file"
 done
+
+# Shared files always come from scaffold/, whichever mode we are installing.
+if $HEADLESS; then
+  for file in "${SHARED_FILES[@]}"; do
+    install_file "$SCAFFOLD_URL" "$file"
+  done
+fi
 
 # Make scripts executable
 if $HEADLESS; then

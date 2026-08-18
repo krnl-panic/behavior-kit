@@ -12,6 +12,7 @@ TESTS=(
   test_headless_preserves_constitution_and_backs_up_changes
   test_headless_scripts_resolve_a_registered_project
   test_per_repo_install_still_needs_a_git_repo
+  test_quarterback_is_not_duplicated_across_trees
 )
 
 # The whole point of the mode: no `git init` here, and it must still succeed.
@@ -130,4 +131,14 @@ test_per_repo_install_still_needs_a_git_repo() {
   capture bash "$INSTALL_SH"
   assert_rc_nonzero
   assert_stderr_contains "not a git repository"
+}
+
+# The quarterback is mode-aware and lives in scaffold/ only. Two copies would
+# drift apart silently, which is exactly what this layout exists to prevent.
+test_quarterback_is_not_duplicated_across_trees() {
+  assert_file_exists "$SCAFFOLD_DIR/.claude/commands/bk.quarterback.md"
+  assert_file_missing "$REPO_ROOT/scaffold-headless/.claude/commands/bk.quarterback.md"
+  # It must carry the mode switch, since both installs share this one copy.
+  assert_grep "Detect your mode" "$SCAFFOLD_DIR/.claude/commands/bk.quarterback.md"
+  assert_grep "grep -q .\\^Project:" "$SCAFFOLD_DIR/.claude/commands/bk.quarterback.md"
 }
