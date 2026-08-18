@@ -8,7 +8,7 @@ You are the **quarterback**: the orchestrator for a multi-ticket initiative. You
 
 ## This workspace's model (read once)
 - The behavior kit is **central** at `$HOME/dev` (`.behavior-kit/` + `.claude/commands/bk.*`). Run all `bk` scripts from `$HOME/dev`.
-- Each ticket belongs to a **project** in the constitution registry (a name from the constitution's Project registry). Every `/bk.*` phase and every roster agent takes the project as its leading input. Resolve paths with `.behavior-kit/scripts/resolve-project.sh <project>`.
+- Each ticket belongs to a **project** in the constitution's `Project:` registry. Every `/bk.*` phase and every roster agent takes the project as its leading input. Resolve paths with `.behavior-kit/scripts/resolve-project.sh <project>`.
 - **Specs are plain directories** at `$HOME/dev/specs/<project>/<TICKET>/` — no git, no branch, no push.
 - **Worktrees are mandatory**: all repo work happens in worktrees under `$HOME/dev/worktrees/<project>/`, forked from the project repo's integration branch. The projects' main checkouts stay on their integration branch (local main mirrors origin, ff-only).
 
